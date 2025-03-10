@@ -339,7 +339,7 @@ control MyIngress(inout headers hdr,
     }
 
     action send_ARP_response(macAddr_t sndMAC) {
-        /* PART2_TODO: Complete action send_ARP_response 
+        /* PART2_TODONE: Complete action send_ARP_response 
            This action changes an incoming ARP request to an ARP reply 
            Argument sndMAC is the MAC address inquired by the request */
         
@@ -455,19 +455,33 @@ control MyIngress(inout headers hdr,
     apply {
         /* Check if TTL expires */
         if (hdr.ipv4.ttl == 1) {
-            /* PART1_TODO: send ICMP time exceeded message */
+            /* PART1_TODONE: send ICMP time exceeded message */
             /* 1. Send the ICMP time exceeded msg using action send_ICMP_error */
             /* 2. Set the source IP address to the IP of the ingress port
                   using table icmp_ingerss_port_ip */
+
+          icmp_ingerss_port_ip.apply();
+          send_ICMP_error(ICMP_TYPE_TIME_EXCEEDED, 0);
+          
         }
         /* Check whether the packet's destination is router */
         else if (is_router_ip.apply().hit) {
-            /* PART1_TODO: handle the packet of which destination is the router */
+            /* PART1_TODONE: handle the packet of which destination is the router */
             /* 1. If the packet is an ICMP echo packet, send an ICMP echo reply */
             /* using action send_ICMP_echo_reply (you should complete the action) */
             /* 2. Else if the packet is TCP or UDP packet, */
             /* send an ICMP port unreachable msg using action send_ICMP_error */  
             /* 3. Otherwise, drop the packet */
+
+            if  (hdr.ipv4.proto == IPV4_ICMP && hdr.icmp.type == ICMP_TYPE_ECHO) {
+              send_ICMP_echo_reply();
+            }
+            else if (hdr.ipv4.proto == IPV4_TCP || hdr.ipv4.proto == IPV4_UDP) {
+              send_ICMP_error(ICMP_TYPE_DEST_UNREACHABLE, ICMP_CODE_PORT_UNREACHABLE)
+            }
+            else {
+              drop();
+            }
         }
         /* Check if the packet is an ARP packet*/
         else if (hdr.arp.isValid()) {
