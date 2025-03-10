@@ -293,7 +293,7 @@ control MyIngress(inout headers hdr,
     }
 
     action send_ICMP_echo_reply() {
-        /* PART1_TODO: complete action send_ICMP_echo_reply */
+        /* PART1_TODONE: complete action send_ICMP_echo_reply */
         /* This action changes an incoming echo request to an echo reply */
 
         /* 1. Set ICMP type to ICMP_TYPE_ECHO_REPLY and code to 0 */
@@ -301,6 +301,22 @@ control MyIngress(inout headers hdr,
         /* 3. Swap src and dst IP addresses */
         /* 4. Swap src and dst MAC addresses */
         /* 5. Set egress_spec to the ingress port */
+
+        hdr.icmp.type = ICMP_TYPE_ECHO_REPLY;
+        hdr.icmp.code = 0;
+
+        hdr.ipv4.ttl = 64;
+
+        ipAddr_t temp_IP_src_addr = hdr.ipv4.srcAddr;
+        hdr.ipv4.srcAddr = hdr.ipv4.dstAddr;
+        hdr.ipv4.dstAddr = temp_IP_src_addr;
+
+        macAddr_t temp_MAC_src_addr = hdr.ethernet.srcAddr;
+        hdr.ethernet.srcAddr = hdr.ethernet.dstAddr;
+        hdr.ethernet.dstAddr = temp_MAC_src_addr;
+
+        standard_metadata.egress_spec = standard_metadata.ingress_port;
+
     }
 
     action forward_to_next_hop(ipAddr_t next_hop){
@@ -336,6 +352,21 @@ control MyIngress(inout headers hdr,
               Change the dest MAC to the original packet's src MAC 
               Then set the src MAC to sndMAC */
         /* 3. Set egress_spec to the ingress_port */
+
+        hdr.arp.op = ARP_OP_REPLY;
+        
+        hdr.arp.tgtMAC = hdr.arp.sndMAC;
+        hdr.arp.sndMAC = sndMAC; // idk???
+
+        ipAddr_t temp_ARP_sndIP = hdr.arp.sndIP;
+        hdr.arp.sndIP = hdr.arp.tgtIP;
+        hdr.arp.tgtIP = temp_ARP_sndIP;
+
+        hdr.ethernet.dstAddr = hdr.ethernet.srcAddr;
+        hdr.ethernet.srcAddr = sndMAC;
+
+        standard_metadata.egress_spec = standard_metadata.ingress_port;
+
     }
     
     action clone_packet() {
