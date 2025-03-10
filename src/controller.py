@@ -372,9 +372,26 @@ def main(p4info_file_path, bmv2_file_path, routing_info, adj_info, part):
                     print ("Receives ARP reply")
                     print ("egress port in int:", egress_port)
                     
-                    ### PART2_TODO: Add arp_table and dmac_forward table entries
+                    ### PART2_TODONE: Add arp_table and dmac_forward table entries
                     ### using the above information from ARP reply
                     ### Use p4info_helper.buildTableEntry and s1.WriteTableEntry as in A2
+
+
+                    arp_entry = p4info_helper.buildTableEntry(
+                      table_name = "MyIngress.arp_table",
+                      match_fields = {"meta.next_hop": next_hop_ip},
+                      action_name = {"MyIngress.change_dst_mac"},
+                      action_params ={"dst_mac": next_hop_mac} 
+                    )
+                    s1.WriteTableEntry(arp_entry)
+
+                    dmac_entry = p4info_helper.buildTableEntry(
+                      table_name = "MyIngress.dmac_forward",
+                      match_fields = {"hdr.ethernet.dstAddr": next_hop_mac},
+                      action_name = {"MyIngress.forward_to_port"},
+                      action_params = { "egress_port": egress_port, "egress_mac": egress_mac }
+                    )
+                    s1.WriteTableEntry(dmac_entry)
                         
                     # Dequeue packets waiting for the ARP reply
                     next_hop_int = int(ipaddress.ip_address(next_hop_ip))
