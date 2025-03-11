@@ -387,7 +387,7 @@ def main(p4info_file_path, bmv2_file_path, routing_info, adj_info, part):
                     arp_entry = p4info_helper.buildTableEntry(
                       table_name = "MyIngress.arp_table",
                       match_fields = {"meta.next_hop": next_hop_ip},
-                      action_name = {"MyIngress.change_dst_mac"},
+                      action_name = "MyIngress.change_dst_mac",
                       action_params ={"dst_mac": next_hop_mac} 
                     )
                     s1.WriteTableEntry(arp_entry)
@@ -395,7 +395,7 @@ def main(p4info_file_path, bmv2_file_path, routing_info, adj_info, part):
                     dmac_entry = p4info_helper.buildTableEntry(
                       table_name = "MyIngress.dmac_forward",
                       match_fields = {"hdr.ethernet.dstAddr": next_hop_mac},
-                      action_name = {"MyIngress.forward_to_port"},
+                      action_name = "MyIngress.forward_to_port",
                       action_params = { "egress_port": egress_port, "egress_mac": egress_mac }
                     )
                     s1.WriteTableEntry(dmac_entry)
@@ -484,7 +484,7 @@ def main(p4info_file_path, bmv2_file_path, routing_info, adj_info, part):
                                       action_name="MyIngress.forward_to_next_hop",
                                       action_params={"next_hop": newRoute.nextHopIP}
                                     )
-                                s1.WriteTableEntry(ipv4_entry, is_modify=True)
+                                s1.WriteTableEntry(ipv4_entry)
                                 pass
                                 
                         dump_routing_table()

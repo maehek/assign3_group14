@@ -459,9 +459,8 @@ control MyIngress(inout headers hdr,
             /* 1. Send the ICMP time exceeded msg using action send_ICMP_error */
             /* 2. Set the source IP address to the IP of the ingress port
                   using table icmp_ingerss_port_ip */
-
-          icmp_ingerss_port_ip.apply();
           send_ICMP_error(ICMP_TYPE_TIME_EXCEEDED, 0);
+          icmp_ingress_port_ip.apply();
           
         }
         /* Check whether the packet's destination is router */
@@ -477,7 +476,7 @@ control MyIngress(inout headers hdr,
               send_ICMP_echo_reply();
             }
             else if (hdr.ipv4.proto == IPV4_TCP || hdr.ipv4.proto == IPV4_UDP) {
-              send_ICMP_error(ICMP_TYPE_DEST_UNREACHABLE, ICMP_CODE_PORT_UNREACHABLE)
+              send_ICMP_error(ICMP_TYPE_DEST_UNREACHABLE, ICMP_CODE_PORT_UNREACHABLE);
             }
             else {
               drop();
